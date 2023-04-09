@@ -27,17 +27,17 @@ class CountRequestsMiddleware:
         self.exceptions_count = 0
 
     def __call__(self, request: HttpRequest):
-        time_delay = 1
+        # time_delay = 10
+        #
+        # if not self.request_time:
+        #     print('It\'s first call may be')
+        # else:
+        #     if (round(time.time()) - self.request_time['time'] < time_delay
+        #             and self.request_time['ipaddress'] == request.META.get('REMOTE_ADDR')):
+        #         print('Слишком много запросов, подождите несколько секунд')
+        #         return render(request, 'requestdataapp/error-request.html')
 
-        if not self.request_time:
-            print('It\'s first call may be')
-        else:
-            if (round(time.time()) - self.request_time['time'] < time_delay
-                    and self.request_time['ipaddress'] == request.META.get('REMOTE_ADDR')):
-                print('Слишком много запросов, подождите несколько секунд')
-                return render(request, 'requestdataapp/error-request.html')
-
-        self.request_time = {'time': round(time.time()), 'ipaddress': request.META.get('REMOTE_ADDR')}
+        # self.request_time = {'time': round(time.time()), 'ipaddress': request.META.get('REMOTE_ADDR')}
 
         self.requests_count += 1
         print('requests_count', self.requests_count)
