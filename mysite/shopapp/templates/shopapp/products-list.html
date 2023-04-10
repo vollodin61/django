@@ -5,6 +5,9 @@
 {% endblock %}
 
 {% block body %}
+    <div>
+        <a href="{% url 'shopapp:orders_list' %}">Go to orders list</a>
+    </div>
     <h1>Products:</h1>
     {% if products %}
         <div>
