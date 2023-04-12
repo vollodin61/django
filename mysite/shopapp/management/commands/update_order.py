@@ -1,6 +1,6 @@
 from django.core.management import BaseCommand
 
-from mysite.shopapp.models import Order, Product
+from shopapp.models import Order, Product
 
 
 class Command(BaseCommand):

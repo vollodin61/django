@@ -1,0 +1,26 @@
+{% extends 'myauth/base.html' %}
+
+{% block title %}
+    About user
+{% endblock %}
+
+{% block body %}
+    <p>
+        <a href="{% url 'shopapp:products_list' %}">Go to products list</a>
+    </p>
+    <p>
+        <a href="{% url 'shopapp:orders_list' %}">Go to orders list</a>
+    </p>
+    <h1>Info about user</h1>
+    {% if user.is_authenticated %}
+        <h2>Detail</h2>
+        <p>ID: {{ user.pk }}</p>
+        <p>Username: {{ user.username }}</p>
+        <p>First name: {{ user.first_name }}</p>
+        <p>Last name: {{ user.last_name }}</p>
+        <p>Email: {{ user.email }}</p>
+        <p>Bio: {{ user.profile.bio }}</p>
+    {% else %}
+        <h2>User is anonimus</h2>
+    {% endif %} 
+{% endblock %}

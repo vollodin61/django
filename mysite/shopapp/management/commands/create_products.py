@@ -1,5 +1,5 @@
 from django.core.management import BaseCommand
-from mysite.shopapp.models import Product
+from shopapp.models import Product
 
 
 class Command(BaseCommand):

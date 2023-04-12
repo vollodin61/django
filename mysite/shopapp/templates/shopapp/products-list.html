@@ -8,6 +8,11 @@
     <div>
         <a href="{% url 'shopapp:orders_list' %}">Go to orders list</a>
     </div>
+    <div>
+        <a href="{% url 'shopapp:product_create' %}">
+            Create a new product
+        </a>
+    </div>
     <h1>Products:</h1>
     {% if products %}
         <div>
@@ -17,6 +22,7 @@
                 >Name:{{ product.name }}</a></p>
                 <p>Price: {{ product.price }}</p>
                 <p>Discount: {% firstof product.discount 'no discount' %}</p>
+                <p>Created_by_user_id: {{ product.created_by }}</p>
             </div>
         
         {% endfor %}
@@ -25,11 +31,5 @@
     {% else %}
         <h3>No products yet</h3>
     {% endif %}
-    
-    <div>
-        <a href="{% url 'shopapp:product_create' %}">
-            Create a new product
-        </a>
-    </div>
-    
+
 {% endblock %}
