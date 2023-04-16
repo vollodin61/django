@@ -3,7 +3,7 @@ from random import choices
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 from django.test import TestCase
 from django.urls import reverse
 
@@ -130,30 +130,36 @@ class ProductExportViewTestCase(TestCase):
 
 
 class OrderDetailViewTestCase(TestCase, PermissionRequiredMixin):
-    permission_required = 'add_product', 'view_product'
+    # permission_required = 'add_product', 'view_order'
     @classmethod
     def setUpClass(cls):
+        permissions = Permission.objects.get(codename='view_order')
         cls.user = User.objects.create_user(
             username='bob_1_test',
             password='123qwe',
         )
-        cls.order = Order.objects.create(
-            delivery_address='6th Avenu 124, f 400',
-            promocode='promoshmomo'
-        )
+        cls.user.user_permissions.add(permissions)
 
     @classmethod
     def tearDownClass(cls):
         cls.user.delete()
-        cls.order.delete()
 
     def setUp(self) -> None:
         self.client.force_login(self.user)
+        self.order = Order.objects.create(
+            delivery_address='6th Avenu 124, f 400',
+            promocode='promoshmomo',
+            user=self.user
+        )
+
+    def tearDown(self) -> None:
+        self.order.delete()
 
     def test_order_details(self):
         response = self.client.get(
             reverse('shopapp:order_details', kwargs={'pk': self.order.pk})
         )
-        self.assertContains(response, 'delivery_address')
-        self.assertContains(response, 'promocode')
+        self.assertContains(response, self.order.delivery_address)
+        self.assertContains(response, self.order.promocode)
+        # response_order = response.context['order']
         self.assertEqual(response.context['pk'], self.order.pk)
