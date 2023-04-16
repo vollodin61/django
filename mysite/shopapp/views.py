@@ -1,6 +1,6 @@
 from timeit import default_timer
 
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.models import Group
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.urls import reverse_lazy
@@ -54,14 +54,15 @@ class ProductsListView(ListView):
     queryset = Product.objects.filter(archived=False)
 
 
-class CreateProductView(UserPassesTestMixin, CreateView):
+class ProductCreateView(UserPassesTestMixin, CreateView, PermissionRequiredMixin):
+    # def form_valid(self, form): хз надо оно тут или нет, ебля с заданием 9
     def test_func(self):
         # return self.request.user.groups.filter('secret-group').exists()
         return self.request.user.user_permissions
 
-
+    permission_required = 'add_product'
     model = Product
-    fields = 'name', 'price', 'discount', 'description'
+    fields = 'name', 'price', 'discount', 'description', 'created_by'
     success_url = reverse_lazy('shopapp:products_list')
 
 
@@ -136,6 +137,22 @@ class OrderDeleteView(DeleteView):
         success_url = self.get_success_url()
         self.object.delete()
         return HttpResponseRedirect(success_url)
+
+
+class ProductsDataExportView(View):
+    def get(self, request: HttpRequest) -> JsonResponse:
+        products = Product.objects.order_by('pk').all()
+        products_data = [
+            {
+                'pk': product.pk,
+                'name': product.name,
+                'price': product.price,
+                'archived': product.archived,
+            }
+            for product in products
+        ]
+        return JsonResponse({'products': products_data})
+
 
 
 # def create_order(request: HttpRequest) -> HttpResponse:

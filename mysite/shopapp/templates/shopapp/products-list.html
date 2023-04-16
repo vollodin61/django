@@ -22,7 +22,7 @@
                 >Name:{{ product.name }}</a></p>
                 <p>Price: {{ product.price }}</p>
                 <p>Discount: {% firstof product.discount 'no discount' %}</p>
-                <p>Created_by_user_id: {{ product.created_by }}</p>
+                <p>Created_by_user_id: {{ product.created_by}}</p>
             </div>
         
         {% endfor %}
