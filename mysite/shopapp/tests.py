@@ -133,7 +133,8 @@ class OrderDetailViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         permission_view_order = Permission.objects.get(codename='view_order')
-        cls.user = User.objects.create_user(username='Nike', password=''.join(choices(ascii_letters, k=10)))
+        cls.user = User.objects.create_user(username='Nina',
+                                            password=''.join(choices(ascii_letters, k=10)))
         cls.user.user_permissions.add(permission_view_order)
 
     @classmethod
@@ -143,8 +144,8 @@ class OrderDetailViewTestCase(TestCase):
     def setUp(self) -> None:
         self.client.force_login(self.user)
         self.order = Order.objects.create(
-            delivery_address='Ul. Svetlau d7',
-            promocode='SALETEST',
+            delivery_address='Coolest delivery address',
+            promocode='Jhopa kakayata',
             user=self.user
         )
 
@@ -153,10 +154,10 @@ class OrderDetailViewTestCase(TestCase):
 
     def test_order_details(self):
         response = self.client.get(reverse('shopapp:order_details', kwargs={'pk': self.order.pk}))
-        data = response.context_data['order']
-        # print(self.order.pk, 'F' * 150)
-        # print(self.order.delivery_address)
-        # print(response)
+        data = response.context['order']
+        print(self.order.pk, 'F' * 150)
+        print(self.order.delivery_address)
+        print(response)
         self.assertContains(response, self.order.delivery_address)
         self.assertContains(response, self.order.promocode)
-        self.assertContains(data.pk, self.order.pk)
+        self.assertEqual(data.pk, self.order.pk)
