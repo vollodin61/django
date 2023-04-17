@@ -55,7 +55,10 @@ class ProductsListView(ListView):
 
 
 class ProductCreateView(UserPassesTestMixin, CreateView, PermissionRequiredMixin):
-    # def form_valid(self, form): хз надо оно тут или нет, ебля с заданием 9
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user.id
+        return super().form_valid(form)
+
     def test_func(self):
         # return self.request.user.groups.filter('secret-group').exists()
         return self.request.user.user_permissions
@@ -66,10 +69,14 @@ class ProductCreateView(UserPassesTestMixin, CreateView, PermissionRequiredMixin
     success_url = reverse_lazy('shopapp:products_list')
 
 
-class ProductUpdateView(UpdateView):
+class ProductUpdateView(UserPassesTestMixin, UpdateView, PermissionRequiredMixin):
     model = Product
     fields = 'name', 'price', 'discount', 'description'
     template_name_suffix = '_update_form'
+    permission_required = 'product_update'
+
+    def test_func(self):
+        return self.request.user.user_permissions
 
     def get_success_url(self):
         return reverse(
