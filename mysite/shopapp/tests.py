@@ -153,7 +153,10 @@ class OrderDetailViewTestCase(TestCase):
 
     def test_order_details(self):
         response = self.client.get(reverse('shopapp:order_details', kwargs={'pk': self.order.pk}))
+        data = response.context_data['order']
+        # print(self.order.pk, 'F' * 150)
+        # print(self.order.delivery_address)
+        # print(response)
         self.assertContains(response, self.order.delivery_address)
         self.assertContains(response, self.order.promocode)
-        response_order = response.context['order']
-        self.assertEqual(response_order.pk, self.order.pk)
+        self.assertContains(data.pk, self.order.pk)

@@ -54,29 +54,35 @@ class ProductsListView(ListView):
     queryset = Product.objects.filter(archived=False)
 
 
-class ProductCreateView(UserPassesTestMixin, CreateView, PermissionRequiredMixin):
+class ProductCreateView(UserPassesTestMixin, CreateView):
+    permission_required = 'add_product'
+    model = Product
+    fields = 'name', 'price', 'discount', 'description'
+    success_url = reverse_lazy('shopapp:products_list')
+
     def form_valid(self, form):
-        form.instance.created_by = self.request.user.id
+        form.instance.created_by = self.request.user
         return super().form_valid(form)
 
     def test_func(self):
-        # return self.request.user.groups.filter('secret-group').exists()
         return self.request.user.user_permissions
 
-    permission_required = 'add_product'
-    model = Product
-    fields = 'name', 'price', 'discount', 'description', 'created_by'
-    success_url = reverse_lazy('shopapp:products_list')
 
 
-class ProductUpdateView(UserPassesTestMixin, UpdateView, PermissionRequiredMixin):
+class ProductUpdateView(UserPassesTestMixin, UpdateView):
     model = Product
     fields = 'name', 'price', 'discount', 'description'
     template_name_suffix = '_update_form'
     permission_required = 'product_update'
 
     def test_func(self):
-        return self.request.user.user_permissions
+        if self.request.user.is_superuser:
+            return True
+
+        product = self.get_object()
+        permissions = self.request.user.get_all_permissions()
+        return ('shopapp.change_product' in permissions) \
+            and (product.created_by.pk == self.request.user.pk)
 
     def get_success_url(self):
         return reverse(
@@ -159,7 +165,6 @@ class ProductsDataExportView(View):
             for product in products
         ]
         return JsonResponse({'products': products_data})
-
 
 
 # def create_order(request: HttpRequest) -> HttpResponse:

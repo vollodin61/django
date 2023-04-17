@@ -8,13 +8,13 @@
     <div>
         <a href="{% url 'shopapp:orders_list' %}">Go to orders list</a>
     </div>
-{#    {% if perms.add_product %}#}
+    {% if perms.shopapp.add_product %}
         <div>
             <a href="{% url 'shopapp:product_create' %}">
                 Create a new product
             </a>
         </div>
-{#    {% endif %}#}
+    {% endif %}
 
     <h1>Products:</h1>
     {% if products %}

@@ -6,7 +6,6 @@
 
 {% block body %}
     <h1>Update product</h1>
-    {% if not product.created_by_id %}
 
         <div>
             <form method="post">
@@ -15,7 +14,6 @@
                 <button type="submit">Update</button>
             </form>
         </div>
-    {% endif %}
 
     <div>
         <a href="{% url 'shopapp:product_details' pk=object.pk %}"
