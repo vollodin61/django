@@ -14,12 +14,38 @@
     <h1>Info about user</h1>
     {% if user.is_authenticated %}
         <h2>Detail</h2>
+        {% if user.profile.avatar %}
+            <img src="{{ user.profile.avatar.url }}" alt="{{ user.profile.name }}">
+        {% else %}
+            No avatar yet
+        {% endif %}
+
         <p>ID: {{ user.pk }}</p>
         <p>Username: {{ user.username }}</p>
         <p>First name: {{ user.first_name }}</p>
         <p>Last name: {{ user.last_name }}</p>
         <p>Email: {{ user.email }}</p>
         <p>Bio: {{ user.profile.bio }}</p>
+
+        <h3>Images:</h3>
+        <div>
+            {% for img in user.profile.images.all %}
+                <div>
+                    <img src="{{ img.image.url }}" alt="{{ img.image.name }}">
+                    <div>{{ img.description }}</div>
+                </div>
+            {% empty %}
+                <div>No images upload yet</div>
+            {% endfor %}
+        </div>
+
+        <div>
+            <button>
+                <a href="{% url 'myauth:profile_update' pk=user.pk %}">
+                Update profile
+            </a>
+            </button>
+        </div>
     {% else %}
         <h2>User is anonimus</h2>
     {% endif %} 

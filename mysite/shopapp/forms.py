@@ -1,5 +1,5 @@
 from django.contrib.auth.models import Group
-from django.forms import ModelForm
+from django.forms import ModelForm, ImageField, ClearableFileInput
 
 from .models import Product, Order
 
@@ -13,7 +13,13 @@ class GroupForm(ModelForm):
 class ProductForm(ModelForm):
     class Meta:
         model = Product
-        fields = 'name', 'price', 'discount', 'description'
+        fields = 'name', 'price', 'discount', 'description', 'preview'
+
+    images = ImageField(
+        widget=ClearableFileInput(attrs={'multiple': True}),
+    )
+
+
 
 
 class OrderForm(ModelForm):
