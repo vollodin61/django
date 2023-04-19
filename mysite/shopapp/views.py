@@ -9,7 +9,7 @@ from django.views.generic import TemplateView, ListView, DetailView, CreateView,
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 
 from .forms import ProductForm, OrderForm, GroupForm
-from .models import Product, Order
+from .models import Product, Order, ProductImage
 
 
 class ShopIngexView(View):
@@ -45,6 +45,7 @@ class GroupsListView(View):
 class ProductDetailsView(DetailView):
     template_name = 'shopapp/products-details.html'
     model = Product
+    queryset = Product.objects.prefetch_related('images')
     context_object_name = 'product'
 
 
@@ -57,8 +58,9 @@ class ProductsListView(ListView):
 class ProductCreateView(UserPassesTestMixin, CreateView):
     permission_required = 'add_product'
     model = Product
-    fields = 'name', 'price', 'discount', 'description'
-    success_url = reverse_lazy('shopapp:products_list')
+    # fields = 'name', 'price', 'discount', 'description', 'preview'
+    # success_url = reverse_lazy('shopapp:products_list')
+    form_class = ProductForm
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
@@ -71,9 +73,25 @@ class ProductCreateView(UserPassesTestMixin, CreateView):
 
 class ProductUpdateView(UserPassesTestMixin, UpdateView):
     model = Product
-    fields = 'name', 'price', 'discount', 'description'
     template_name_suffix = '_update_form'
     permission_required = 'product_update'
+    form_class = ProductForm
+
+    def get_success_url(self):
+        return reverse(
+            'shopapp:product_details',
+            kwargs={'pk': self.object.pk},
+        )
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        for image in form.files.getlist('images'):
+            ProductImage.objects.create(
+                product=self.object,
+                image=image,
+            )
+
+        return response
 
     def test_func(self):
         if self.request.user.is_superuser:
@@ -83,12 +101,6 @@ class ProductUpdateView(UserPassesTestMixin, UpdateView):
         permissions = self.request.user.get_all_permissions()
         return ('shopapp.change_product' in permissions) \
             and (product.created_by.pk == self.request.user.pk)
-
-    def get_success_url(self):
-        return reverse(
-            'shopapp:product_details',
-            kwargs={'pk': self.object.pk},
-        )
 
 
 class ProductDeleteView(DeleteView):

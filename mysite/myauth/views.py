@@ -1,17 +1,72 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.models import User
 from django.contrib.auth.views import LogoutView
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import TemplateView, CreateView
+from django.views.generic import TemplateView, CreateView, DetailView, UpdateView
+from django.forms.forms import BaseForm
+from django.shortcuts import reverse
 
-from myauth.models import Profile
+from myauth.forms import ProfileForm
+from myauth.models import Profile, ProfileImage
 
 
+# class AboutMeView(DetailView):
+    # template_name = 'myauth/about-me.html'
+    # model = User
+    # context_object_name = 'user_profile'
 class AboutMeView(TemplateView):
-    template_name = 'myauth/about-me.html'
+    template_name = "myauth/about-me.html"
+
+
+class ProfileUpdateView(UserPassesTestMixin, UpdateView):
+    template_name = 'myauth/profile_update_form.html'
+    model = Profile
+    fields = 'avatar', 'bio'
+
+    def test_func(self):
+        return self.request.user.id == self.request.user.profile.id or \
+            self.request.user.is_superuser or \
+            self.request.user.is_staff
+
+    def get_success_url(self):
+        return reverse('myauth:about-me')
+
+
+# class ProfileUpdateView(UserPassesTestMixin, UpdateView):
+#     model = Profile
+#     template_name_suffix = '_update_form'
+#     permission_required = 'change_profile'
+#     form_class = ProfileForm
+#     context_object_name = 'user_profile'
+#
+#     def get_success_url(self):
+#         return reverse(
+#             'myauth:about-me',
+#             # kwargs={'pk': self.object.pk}
+#         )
+#
+#     def form_valid(self, form):
+#         response = super().form_valid(form)
+#         for image in form.files.getlist('images'):
+#             ProfileImage.objects.create(
+#                 profile=self.object,
+#                 image=image,
+#             )
+#         return response
+#
+#     def test_func(self):
+#         if self.request.user.is_superuser:
+#             return True
+#
+#         profile = self.get_object()
+#         permissions = self.request.user.get_all_permissions()
+#         return ('myauth.change_profile' in permissions) \
+#             and (profile.pk == self.request.user.pk)
 
 
 class MyLogoutView(LogoutView):
@@ -63,4 +118,3 @@ def get_session_view(request: HttpRequest) -> HttpResponse:
 class FooBarView(View):
     def get(self, request: HttpRequest) -> JsonResponse:
         return JsonResponse({'foo': 'bar', 'spam': 'eggs'})
-
