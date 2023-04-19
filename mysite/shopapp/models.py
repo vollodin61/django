@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from myauth.models import Profile
-
+# and obj.created_by == request.user
 
 class Product(models.Model):
 
@@ -13,7 +13,7 @@ class Product(models.Model):
     price = models.DecimalField(default=0, max_digits=8, decimal_places=2)
     discount = models.SmallIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.PROTECT, )
+    created_by = models.ForeignKey(User, on_delete=models.PROTECT)
     archived = models.BooleanField(default=False)
 
     def __str__(self) -> str:

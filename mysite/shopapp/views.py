@@ -54,22 +54,35 @@ class ProductsListView(ListView):
     queryset = Product.objects.filter(archived=False)
 
 
-class ProductCreateView(UserPassesTestMixin, CreateView, PermissionRequiredMixin):
-    # def form_valid(self, form): хз надо оно тут или нет, ебля с заданием 9
-    def test_func(self):
-        # return self.request.user.groups.filter('secret-group').exists()
-        return self.request.user.user_permissions
-
+class ProductCreateView(UserPassesTestMixin, CreateView):
     permission_required = 'add_product'
     model = Product
-    fields = 'name', 'price', 'discount', 'description', 'created_by'
+    fields = 'name', 'price', 'discount', 'description'
     success_url = reverse_lazy('shopapp:products_list')
 
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        return super().form_valid(form)
 
-class ProductUpdateView(UpdateView):
+    def test_func(self):
+        return self.request.user.user_permissions
+
+
+
+class ProductUpdateView(UserPassesTestMixin, UpdateView):
     model = Product
     fields = 'name', 'price', 'discount', 'description'
     template_name_suffix = '_update_form'
+    permission_required = 'product_update'
+
+    def test_func(self):
+        if self.request.user.is_superuser:
+            return True
+
+        product = self.get_object()
+        permissions = self.request.user.get_all_permissions()
+        return ('shopapp.change_product' in permissions) \
+            and (product.created_by.pk == self.request.user.pk)
 
     def get_success_url(self):
         return reverse(
@@ -96,7 +109,7 @@ class OrdersListView(LoginRequiredMixin, ListView):
 
 
 class OrdersDetailView(PermissionRequiredMixin, DetailView):
-    permission_required = 'view_order'
+    permission_required = 'shopapp.view_order'
     queryset = (Order.objects.
                 select_related('user').
                 prefetch_related('products'))
@@ -152,7 +165,6 @@ class ProductsDataExportView(View):
             for product in products
         ]
         return JsonResponse({'products': products_data})
-
 
 
 # def create_order(request: HttpRequest) -> HttpResponse:

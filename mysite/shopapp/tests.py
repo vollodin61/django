@@ -129,16 +129,13 @@ class ProductExportViewTestCase(TestCase):
         )
 
 
-class OrderDetailViewTestCase(TestCase, PermissionRequiredMixin):
-    # permission_required = 'add_product', 'view_order'
+class OrderDetailViewTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
-        permissions = Permission.objects.get(codename='view_order')
-        cls.user = User.objects.create_user(
-            username='bob_1_test',
-            password='123qwe',
-        )
-        cls.user.user_permissions.add(permissions)
+        permission_view_order = Permission.objects.get(codename='view_order')
+        cls.user = User.objects.create_user(username='Nina',
+                                            password=''.join(choices(ascii_letters, k=10)))
+        cls.user.user_permissions.add(permission_view_order)
 
     @classmethod
     def tearDownClass(cls):
@@ -147,8 +144,8 @@ class OrderDetailViewTestCase(TestCase, PermissionRequiredMixin):
     def setUp(self) -> None:
         self.client.force_login(self.user)
         self.order = Order.objects.create(
-            delivery_address='6th Avenu 124, f 400',
-            promocode='promoshmomo',
+            delivery_address='Coolest delivery address',
+            promocode='Jhopa kakayata',
             user=self.user
         )
 
@@ -156,10 +153,11 @@ class OrderDetailViewTestCase(TestCase, PermissionRequiredMixin):
         self.order.delete()
 
     def test_order_details(self):
-        response = self.client.get(
-            reverse('shopapp:order_details', kwargs={'pk': self.order.pk})
-        )
+        response = self.client.get(reverse('shopapp:order_details', kwargs={'pk': self.order.pk}))
+        data = response.context['order']
+        print(self.order.pk, 'F' * 150)
+        print(self.order.delivery_address)
+        print(response)
         self.assertContains(response, self.order.delivery_address)
         self.assertContains(response, self.order.promocode)
-        # response_order = response.context['order']
-        self.assertEqual(response.context['pk'], self.order.pk)
+        self.assertEqual(data.pk, self.order.pk)
